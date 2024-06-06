@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jverdu-r <jverdu-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jorge <jorge@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/12 12:48:17 by jverdu-r          #+#    #+#             */
-/*   Updated: 2024/06/05 19:09:21 by jverdu-r         ###   ########.fr       */
+/*   Updated: 2024/06/06 09:58:08 by jorge            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,11 +69,39 @@ void	scmd_free(t_command *cmd)
 
 void	cmd_free(t_command *cmd)
 {
-	while (cmd->next)
+	if (cmd)
 	{
-		cmd = cmd->next;
-		scmd_free(cmd->prev);
-		cmd->prev = NULL;
+		while (cmd->next)
+		{
+			cmd = cmd->next;
+			scmd_free(cmd->prev);
+			cmd->prev = NULL;
+		}
+		scmd_free(cmd);
 	}
-	scmd_free(cmd);
+}
+
+t_command	*skip_cmd(t_command *cmd)
+{
+	t_command	*prev;
+	t_command	*next;
+
+	prev = cmd->prev;
+	next = cmd->next;
+	if (cmd->next)
+	{
+		cmd = next;
+		scmd_free(cmd->prev);
+		cmd->prev = prev;
+		if (cmd->prev)
+			cmd->prev->next = cmd;
+	}
+	else if (!cmd->next && cmd->prev)
+	{
+		while (cmd->prev)
+			cmd = cmd->prev;
+		cmd_free(cmd);
+		cmd = NULL;
+	}
+	return (cmd);
 }
